@@ -1,15 +1,25 @@
 {
-  "pluginAlias": "ExampleHomebridgePlugin",
+  "pluginAlias": "HomebridgeVirtualButton",
   "pluginType": "platform",
   "singular": true,
   "schema": {
     "type": "object",
+    "additionalProperties": true,
     "properties": {
-      "name": {
-        "title": "Name",
-        "type": "string",
-        "required": true,
-        "default": "Example Dynamic Platform"
+      "switches": {
+        "type": "array",
+        "additionalItems": true,
+        "items": {
+          "type": "object",
+          "additionalProperties": true,
+          "properties": {
+            "name": {
+              "title": "Disply name for homekit",
+              "type": "string",
+              "required": true
+            }
+          }
+        }
       }
     }
   }
