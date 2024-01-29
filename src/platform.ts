@@ -80,17 +80,25 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
     request: IncomingMessage,
     response: ServerResponse
   ) {
+    const [_url, query] =
+      request.url && request.url.includes("?") ? request.url.split("?") : [];
+    const nameRaw = query ? query.replace("name=", "") : "";
+    const instanceName = nameRaw ? decodeURIComponent(nameRaw) : null;
+    const instance = this.instances.find((i) => {
+      return i.getName() === instanceName;
+    });
+
     if (request.url?.includes("/toggle")) {
-      const [_url, query] = request.url ? request.url.split("?") : [];
-      const nameRaw = query ? query.replace("name=", "") : "";
-      const name = decodeURIComponent(nameRaw);
-      const instance = this.instances.find((i) => {
-        return i.getName() === name;
-      });
       if (instance) {
         await instance.toggleState();
       } else {
-        this.log.error("Could not find instance for name:", name);
+        this.log.error("Could not find instance for name:", instanceName);
+      }
+    } else if (request.url?.includes("/setOn")) {
+      if (instance) {
+        await instance.setStateOn();
+      } else {
+        this.log.error("Could not find instance for name:", instanceName);
       }
     }
 

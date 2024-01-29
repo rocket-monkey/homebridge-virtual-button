@@ -2,6 +2,9 @@ import { Service, PlatformAccessory, CharacteristicValue } from "homebridge";
 
 import { ExampleHomebridgePlatform } from "./platform";
 
+const sleep = async (ms: number) =>
+  new Promise((resolve) => setTimeout(resolve, ms));
+
 /**
  * Platform Accessory
  * An instance of this class is created for each accessory your platform registers
@@ -71,6 +74,20 @@ export class PlatformSwitchAccessory {
     );
   }
 
+  async setStateOn() {
+    await this.setOn(true);
+    this.service?.updateCharacteristic(
+      this.platform.Characteristic.On,
+      this.states?.On
+    );
+    await sleep(1500);
+    await this.setOn(false);
+    this.service?.updateCharacteristic(
+      this.platform.Characteristic.On,
+      this.states?.On
+    );
+  }
+
   /**
    * Handle "SET" requests from HomeKit
    * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
@@ -81,6 +98,7 @@ export class PlatformSwitchAccessory {
       value
     );
     this.states.On = value as boolean;
+    await sleep(300);
   }
 
   /**
