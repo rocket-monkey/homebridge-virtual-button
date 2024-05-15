@@ -71,8 +71,8 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
 
       this.handleRequest(req, res);
     });
-    this.requestServer.listen(18082, () =>
-      this.log.info("Http server listening on 18082...")
+    this.requestServer.listen(18084, () =>
+      this.log.info("Http server listening on 18084...")
     );
   }
 
