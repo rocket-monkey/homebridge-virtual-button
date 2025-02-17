@@ -30,7 +30,7 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
   constructor(
     public readonly log: Logger,
     public readonly config: PlatformConfig,
-    public readonly api: API
+    public readonly api: API,
   ) {
     this.log.debug("Finished initializing platform:", this.config.name);
 
@@ -54,11 +54,11 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
       res.setHeader("Access-Control-Allow-Origin", "*"); // This allows all origins
       res.setHeader(
         "Access-Control-Allow-Methods",
-        "GET, POST, OPTIONS, PUT, PATCH, DELETE"
+        "GET, POST, OPTIONS, PUT, PATCH, DELETE",
       );
       res.setHeader(
         "Access-Control-Allow-Headers",
-        "X-Requested-With,content-type"
+        "X-Requested-With,content-type",
       );
       res.setHeader("Access-Control-Allow-Credentials", "true");
 
@@ -72,13 +72,13 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
       this.handleRequest(req, res);
     });
     this.requestServer.listen(18082, () =>
-      this.log.info("Http server listening on 18082...")
+      this.log.info("Http server listening on 18082..."),
     );
   }
 
   private async handleRequest(
     request: IncomingMessage,
-    response: ServerResponse
+    response: ServerResponse,
   ) {
     const [_url, query] =
       request.url && request.url.includes("?") ? request.url.split("?") : [];
@@ -138,14 +138,14 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
       // see if an accessory with the same uuid has already been registered and restored from
       // the cached devices we stored in the `configureAccessory` method above
       const existingAccessory = this.accessories.find(
-        (accessory) => accessory.UUID === uuid
+        (accessory) => accessory.UUID === uuid,
       );
 
       if (existingAccessory) {
         // the accessory already exists
         this.log.info(
           "Restoring existing accessory from cache:",
-          existingAccessory.displayName
+          existingAccessory.displayName,
         );
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:
