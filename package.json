@@ -1,7 +1,7 @@
 {
   "displayName": "Homebridge Virtual Button",
   "name": "homebridge-virtual-button",
-  "version": "1.2.4",
+  "version": "1.2.5",
   "description": "Just simple virtual buttons accessories for Homebridge",
   "license": "Apache-2.0",
   "repository": {
