@@ -9,8 +9,8 @@ import {
   Service,
 } from "homebridge";
 import http, { IncomingMessage, Server, ServerResponse } from "http";
-import { PlatformSwitchAccessory } from "./platformAccessory";
-import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
+import { PlatformSwitchAccessory } from "./platformAccessory.js";
+import { PLATFORM_NAME, PLUGIN_NAME } from "./settings.js";
 
 /**
  * HomebridgePlatform
@@ -19,9 +19,8 @@ import { PLATFORM_NAME, PLUGIN_NAME } from "./settings";
  */
 export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
   private requestServer?: Server;
-  public readonly Service: typeof Service = this.api.hap.Service;
-  public readonly Characteristic: typeof Characteristic =
-    this.api.hap.Characteristic;
+  public readonly Service: typeof Service;
+  public readonly Characteristic: typeof Characteristic;
 
   // this is used to track restored cached accessories
   public readonly accessories: PlatformAccessory[] = [];
@@ -30,8 +29,11 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
   constructor(
     public readonly log: Logger,
     public readonly config: PlatformConfig,
-    public readonly api: API,
+    public readonly api: API
   ) {
+    this.Service = api.hap.Service;
+    this.Characteristic = api.hap.Characteristic;
+
     this.log.debug("Finished initializing platform:", this.config.name);
 
     // When this event is fired it means Homebridge has restored all cached accessories from disk.
@@ -54,11 +56,11 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
       res.setHeader("Access-Control-Allow-Origin", "*"); // This allows all origins
       res.setHeader(
         "Access-Control-Allow-Methods",
-        "GET, POST, OPTIONS, PUT, PATCH, DELETE",
+        "GET, POST, OPTIONS, PUT, PATCH, DELETE"
       );
       res.setHeader(
         "Access-Control-Allow-Headers",
-        "X-Requested-With,content-type",
+        "X-Requested-With,content-type"
       );
       res.setHeader("Access-Control-Allow-Credentials", "true");
 
@@ -72,13 +74,13 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
       this.handleRequest(req, res);
     });
     this.requestServer.listen(18082, () =>
-      this.log.info("Http server listening on 18082..."),
+      this.log.info("Http server listening on 18082...")
     );
   }
 
   private async handleRequest(
     request: IncomingMessage,
-    response: ServerResponse,
+    response: ServerResponse
   ) {
     const [_url, query] =
       request.url && request.url.includes("?") ? request.url.split("?") : [];
@@ -138,14 +140,14 @@ export class ExampleHomebridgePlatform implements DynamicPlatformPlugin {
       // see if an accessory with the same uuid has already been registered and restored from
       // the cached devices we stored in the `configureAccessory` method above
       const existingAccessory = this.accessories.find(
-        (accessory) => accessory.UUID === uuid,
+        (accessory) => accessory.UUID === uuid
       );
 
       if (existingAccessory) {
         // the accessory already exists
         this.log.info(
           "Restoring existing accessory from cache:",
-          existingAccessory.displayName,
+          existingAccessory.displayName
         );
 
         // if you need to update the accessory.context then you should run `api.updatePlatformAccessories`. eg.:

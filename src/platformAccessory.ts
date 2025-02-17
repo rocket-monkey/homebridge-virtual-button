@@ -1,6 +1,6 @@
 import { Service, PlatformAccessory, CharacteristicValue } from "homebridge";
 
-import { ExampleHomebridgePlatform } from "./platform";
+import { ExampleHomebridgePlatform } from "./platform.js";
 
 const sleep = async (ms: number) =>
   new Promise((resolve) => setTimeout(resolve, ms));
@@ -23,19 +23,19 @@ export class PlatformSwitchAccessory {
 
   constructor(
     private readonly platform: ExampleHomebridgePlatform,
-    private readonly accessory: PlatformAccessory,
+    private readonly accessory: PlatformAccessory
   ) {
     // set accessory information
     this.accessory
       .getService(this.platform.Service.AccessoryInformation)!
       .setCharacteristic(
         this.platform.Characteristic.Manufacturer,
-        "Default-Manufacturer",
+        "Default-Manufacturer"
       )
       .setCharacteristic(this.platform.Characteristic.Model, "Default-Model")
       .setCharacteristic(
         this.platform.Characteristic.SerialNumber,
-        "Default-Serial",
+        "Default-Serial"
       );
 
     // get the LightBulb service if it exists, otherwise create a new LightBulb service
@@ -48,7 +48,7 @@ export class PlatformSwitchAccessory {
     // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
     this.service.setCharacteristic(
       this.platform.Characteristic.Name,
-      accessory.context.switch.name,
+      accessory.context.switch.name
     );
 
     // each service must implement at-minimum the "required characteristics" for the given service type
@@ -70,7 +70,7 @@ export class PlatformSwitchAccessory {
     await this.setOn(!isOn);
     this.service?.updateCharacteristic(
       this.platform.Characteristic.On,
-      this.states?.On,
+      this.states?.On
     );
   }
 
@@ -78,13 +78,13 @@ export class PlatformSwitchAccessory {
     await this.setOn(true);
     this.service?.updateCharacteristic(
       this.platform.Characteristic.On,
-      this.states?.On,
+      this.states?.On
     );
     await sleep(1500);
     await this.setOn(false);
     this.service?.updateCharacteristic(
       this.platform.Characteristic.On,
-      this.states?.On,
+      this.states?.On
     );
   }
 
@@ -95,7 +95,7 @@ export class PlatformSwitchAccessory {
   async setOn(value: CharacteristicValue) {
     this.platform.log.info(
       `Set Characteristic On -> for "${this.accessory.context.switch.name}"`,
-      value,
+      value
     );
     this.states.On = value as boolean;
     await sleep(300);
