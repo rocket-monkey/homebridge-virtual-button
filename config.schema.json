@@ -17,6 +17,11 @@
               "title": "Disply name for homekit",
               "type": "string",
               "required": true
+            },
+            "cooldown": {
+              "title": "Cooldown time in seconds",
+              "type": "integer",
+              "required": false
             }
           }
         }

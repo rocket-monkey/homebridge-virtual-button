@@ -98,6 +98,21 @@ export class PlatformSwitchAccessory {
       value,
     );
     this.states.On = value as boolean;
+
+    if (!!this.accessory.context.switch.cooldown && this.accessory.context.switch.cooldown > 0) {
+      setTimeout(() => {
+        this.platform.log.info(
+          `Cooldown finished for "${this.accessory.context.switch.name}", turning off...`,
+        );
+        this.states.On = false;
+        this.service.updateCharacteristic(
+          this.platform.Characteristic.On,
+          this.states.On,
+        );
+      }
+      , this.accessory.context.switch.cooldown * 1000);
+    }
+
     await sleep(300);
   }
 
