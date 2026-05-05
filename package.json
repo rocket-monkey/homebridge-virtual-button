@@ -2,7 +2,7 @@
   "displayName": "Homebridge Virtual Button",
   "name": "homebridge-virtual-button",
   "type": "module",
-  "version": "1.4.0",
+  "version": "1.5.0",
   "description": "Just simple virtual buttons accessories for Homebridge",
   "license": "Apache-2.0",
   "repository": {
@@ -13,7 +13,7 @@
     "url": "https://github.com/rocket-monkey/homebridge-virtual-button/issues"
   },
   "engines": {
-    "node": "^18.20.4 || ^20.12.2 || ^20.18.0 || ^22.10.0",
+    "node": "^18.20.4 || ^20.12.2 || ^20.18.0 || ^22.10.0 || ^24.0.0",
     "homebridge": "^1.8.0 || ^2.0.0-beta.0"
   },
   "main": "dist/index.js",

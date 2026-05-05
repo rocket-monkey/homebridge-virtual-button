@@ -38,27 +38,37 @@ export class PlatformSwitchAccessory {
         "Default-Serial",
       );
 
-    // get the LightBulb service if it exists, otherwise create a new LightBulb service
-    // you can create multiple services for each accessory
     this.service =
       this.accessory.getService(this.platform.Service.Switch) ||
       this.accessory.addService(this.platform.Service.Switch);
 
-    // set the service name, this is what is displayed as the default name on the Home app
-    // in this example we are using the name we stored in the `accessory.context` in the `discoverDevices` method.
     this.service.setCharacteristic(
       this.platform.Characteristic.Name,
       accessory.context.switch.name,
     );
 
-    // each service must implement at-minimum the "required characteristics" for the given service type
-    // see https://developers.homebridge.io/#/service/Lightbulb
+    // Restore persisted On state. Stateful switches (no cooldown) survive
+    // restarts; momentary buttons (cooldown > 0) are always off at boot
+    // since the cooldown timer would have lapsed during downtime.
+    const cooldown = Number(accessory.context.switch.cooldown ?? 0);
+    if (cooldown > 0) {
+      this.states.On = false;
+      if (accessory.context.lastOn) {
+        accessory.context.lastOn = false;
+        this.platform.api.updatePlatformAccessories([accessory]);
+      }
+    } else {
+      this.states.On = accessory.context.lastOn === true;
+    }
+    this.service.updateCharacteristic(
+      this.platform.Characteristic.On,
+      this.states.On,
+    );
 
-    // register handlers for the On/Off Characteristic
     this.service
       .getCharacteristic(this.platform.Characteristic.On)
-      .onSet(this.setOn.bind(this)) // SET - bind to the `setOn` method below
-      .onGet(this.getOn.bind(this)); // GET - bind to the `getOn` method below
+      .onSet(this.setOn.bind(this))
+      .onGet(this.getOn.bind(this));
   }
 
   getName(): string {
@@ -98,6 +108,7 @@ export class PlatformSwitchAccessory {
       value,
     );
     this.states.On = value as boolean;
+    this.persistState();
 
     if (!!this.accessory.context.switch.cooldown && this.accessory.context.switch.cooldown > 0) {
       setTimeout(() => {
@@ -105,6 +116,7 @@ export class PlatformSwitchAccessory {
           `Cooldown finished for "${this.accessory.context.switch.name}", turning off...`,
         );
         this.states.On = false;
+        this.persistState();
         this.service.updateCharacteristic(
           this.platform.Characteristic.On,
           this.states.On,
@@ -114,6 +126,11 @@ export class PlatformSwitchAccessory {
     }
 
     await sleep(300);
+  }
+
+  private persistState() {
+    this.accessory.context.lastOn = this.states.On;
+    this.platform.api.updatePlatformAccessories([this.accessory]);
   }
 
   /**
