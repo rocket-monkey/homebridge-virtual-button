@@ -21,6 +21,9 @@ export class PlatformSwitchAccessory {
     On: false,
   };
 
+  /** Pending auto-off timer; cleared on any subsequent setOn (manual OFF or re-ON). */
+  private autoOffTimer?: ReturnType<typeof setTimeout>;
+
   constructor(
     private readonly platform: ExampleHomebridgePlatform,
     private readonly accessory: PlatformAccessory,
@@ -47,11 +50,11 @@ export class PlatformSwitchAccessory {
       accessory.context.switch.name,
     );
 
-    // Restore persisted On state. Stateful switches (no cooldown) survive
-    // restarts; momentary buttons (cooldown > 0) are always off at boot
-    // since the cooldown timer would have lapsed during downtime.
-    const cooldown = Number(accessory.context.switch.cooldown ?? 0);
-    if (cooldown > 0) {
+    // Restore persisted On state. Stateful switches (no auto-off) survive
+    // restarts; auto-off buttons are always off at boot since the timer
+    // would have lapsed during downtime.
+    const autoOffSec = this.getAutoOffSeconds();
+    if (autoOffSec > 0) {
       this.states.On = false;
       if (accessory.context.lastOn) {
         accessory.context.lastOn = false;
@@ -99,8 +102,11 @@ export class PlatformSwitchAccessory {
   }
 
   /**
-   * Handle "SET" requests from HomeKit
-   * These are sent when the user changes the state of an accessory, for example, turning on a Light bulb.
+   * Handle "SET" requests from HomeKit. Auto-off semantics: any setOn call
+   * cancels any pending auto-off timer; a setOn(true) re-arms it. setOn(false)
+   * just cancels. This prevents two bugs from the original `cooldown` impl:
+   *   - timer scheduled on every setOn including OFF (no-op noise)
+   *   - rapid ON→OFF→ON had the first timer still pending, firing early
    */
   async setOn(value: CharacteristicValue) {
     this.platform.log.info(
@@ -110,10 +116,16 @@ export class PlatformSwitchAccessory {
     this.states.On = value as boolean;
     this.persistState();
 
-    if (!!this.accessory.context.switch.cooldown && this.accessory.context.switch.cooldown > 0) {
-      setTimeout(() => {
+    if (this.autoOffTimer) {
+      clearTimeout(this.autoOffTimer);
+      this.autoOffTimer = undefined;
+    }
+
+    const autoOffSec = this.getAutoOffSeconds();
+    if (this.states.On && autoOffSec > 0) {
+      this.autoOffTimer = setTimeout(() => {
         this.platform.log.info(
-          `Cooldown finished for "${this.accessory.context.switch.name}", turning off...`,
+          `Auto-off fired for "${this.accessory.context.switch.name}" after ${autoOffSec}s`,
         );
         this.states.On = false;
         this.persistState();
@@ -121,11 +133,27 @@ export class PlatformSwitchAccessory {
           this.platform.Characteristic.On,
           this.states.On,
         );
-      }
-      , this.accessory.context.switch.cooldown * 1000);
+        this.autoOffTimer = undefined;
+      }, autoOffSec * 1000);
+      this.autoOffTimer.unref?.();
     }
 
     await sleep(300);
+  }
+
+  /**
+   * Resolve the auto-off timeout in seconds. Prefers the new `autoOffSeconds`
+   * field; falls back to the legacy `cooldown` name (which was a misnomer —
+   * it always meant auto-off-after-N-seconds, not a press debounce).
+   * Returns 0 (= stateful, no auto-off) for missing/invalid values.
+   */
+  private getAutoOffSeconds(): number {
+    const raw =
+      this.accessory.context.switch.autoOffSeconds
+      ?? this.accessory.context.switch.cooldown
+      ?? 0;
+    const n = Number(raw);
+    return Number.isFinite(n) && n > 0 ? n : 0;
   }
 
   private persistState() {

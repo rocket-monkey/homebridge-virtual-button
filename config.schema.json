@@ -18,8 +18,16 @@
               "type": "string",
               "required": true
             },
+            "autoOffSeconds": {
+              "title": "Auto-off after N seconds",
+              "description": "When set, the switch auto-flips back to OFF this many seconds after being turned ON. The timer is cancelled on any subsequent setOn (manual OFF cancels cleanly; re-ON restarts the countdown). Leave unset (or 0) for a normal stateful switch that survives restarts.",
+              "type": "integer",
+              "minimum": 0,
+              "required": false
+            },
             "cooldown": {
-              "title": "Cooldown time in seconds",
+              "title": "Cooldown time in seconds (legacy alias for autoOffSeconds)",
+              "description": "Deprecated — use autoOffSeconds. Honored as a fallback for existing configs.",
               "type": "integer",
               "required": false
             }
